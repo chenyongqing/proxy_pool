@@ -1,0 +1,28 @@
+version: '2'
+services:
+  proxy_pool:
+    build: ../
+    container_name: proxy_pool
+    ports:
+      - "5010:5010"
+    links:
+      - proxy_redis
+    environment:
+      DB_CONN: "redis://:${REDIS_PASSWORD:-difyai123456}@proxy_redis:6379/0"
+      REDIS_PASSWORD: "difyai123456"  # Set the Redis password here
+
+  # The redis cache.
+  proxy_redis:
+    image: redis:6-alpine
+    restart: always
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-difyai123456}
+    volumes:
+      # Mount the redis data directory to the container.
+      - ./volumes/redis/data:/data
+    # Set the redis password when startup redis server.
+    command: redis-server --requirepass ${REDIS_PASSWORD:-difyai123456}
+    healthcheck:
+      test: [ 'CMD', 'redis-cli', 'ping' ]
+    ports:
+      - '${EXPOSE_REDIS_PORT:-6379}:${REDIS_PORT:-6379}'

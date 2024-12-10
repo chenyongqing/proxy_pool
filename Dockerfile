@@ -1,21 +1,21 @@
-FROM python:3.6-alpine
+FROM alibaba-cloud-linux-3-registry.cn-hangzhou.cr.aliyuncs.com/alinux3/python:3.11.1
 
-MAINTAINER jhao104 <j_hao104@163.com>
+MAINTAINER yongqing.chen <yongqing1102@126.com>
 
 WORKDIR /app
 
 COPY ./requirements.txt .
 
-# apk repository
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+# Set timezone
+RUN yum install -y tzdata && \
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    yum clean all
 
-# timezone
-RUN apk add -U tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && apk del tzdata
-
-# runtime environment
-RUN apk add musl-dev gcc libxml2-dev libxslt-dev && \
+# Install dependencies
+RUN yum install -y gcc libxml2-devel libxslt-devel && \
     pip install --no-cache-dir -r requirements.txt && \
-    apk del gcc musl-dev
+    yum remove -y gcc && \
+    yum clean all
 
 COPY . .
 
